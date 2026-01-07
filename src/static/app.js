@@ -71,6 +71,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state
   let currentUser = null;
 
+  // Helper function to escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // Time range mappings for the dropdown
   const timeRanges = {
     morning: { start: "06:00", end: "08:00" }, // Before school hours
@@ -579,6 +586,18 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("")}
         </ul>
       </div>
+      <div class="social-share">
+        <span class="share-label">Share:</span>
+        <button class="share-button facebook" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share on Facebook">
+          <span class="share-icon">f</span>
+        </button>
+        <button class="share-button twitter" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share on Twitter">
+          <span class="share-icon">𝕏</span>
+        </button>
+        <button class="share-button email" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share via Email">
+          <span class="share-icon">✉</span>
+        </button>
+      </div>
       <div class="activity-card-actions">
         ${
           currentUser
@@ -604,6 +623,12 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", handleUnregister);
     });
 
+    // Add click handlers for share buttons
+    const shareButtons = activityCard.querySelectorAll(".share-button");
+    shareButtons.forEach((button) => {
+      button.addEventListener("click", handleShare);
+    });
+
     // Add click handler for register button (only when authenticated)
     if (currentUser) {
       const registerButton = activityCard.querySelector(".register-button");
@@ -615,6 +640,64 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     activitiesList.appendChild(activityCard);
+  }
+
+  // Handle social sharing
+  function handleShare(event) {
+    const button = event.currentTarget;
+    const platform = button.classList.contains("facebook")
+      ? "facebook"
+      : button.classList.contains("twitter")
+      ? "twitter"
+      : "email";
+
+    const activityName = button.dataset.activity;
+    const description = button.dataset.description;
+    const schedule = button.dataset.schedule;
+
+    // Validate that we have the required data
+    if (!activityName || !description || !schedule) {
+      console.error("Missing required data for sharing");
+      return;
+    }
+
+    const pageUrl = window.location.href;
+    const shareText = `Check out ${activityName} at Mergington High School! ${description} Schedule: ${schedule}`;
+    const encodedText = encodeURIComponent(shareText);
+    const encodedUrl = encodeURIComponent(pageUrl);
+
+    let shareUrl;
+
+    switch (platform) {
+      case "facebook":
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
+        // Validate URL starts with expected Facebook domain
+        if (shareUrl.startsWith("https://www.facebook.com/")) {
+          window.open(shareUrl, "_blank", "width=600,height=400,noopener,noreferrer");
+        }
+        break;
+      case "twitter":
+        shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+        // Validate URL starts with expected Twitter domain
+        if (shareUrl.startsWith("https://twitter.com/")) {
+          window.open(shareUrl, "_blank", "width=600,height=400,noopener,noreferrer");
+        }
+        break;
+      case "email":
+        const subject = encodeURIComponent(`Check out ${activityName}!`);
+        const body = encodeURIComponent(
+          `I wanted to share this activity with you:\n\n${activityName}\n${description}\n\nSchedule: ${schedule}\n\nView more at: ${pageUrl}`
+        );
+        shareUrl = `mailto:?subject=${subject}&body=${body}`;
+        // Validate URL starts with mailto:
+        if (shareUrl.startsWith("mailto:")) {
+          // Use a temporary anchor element for better cross-browser compatibility
+          const anchor = document.createElement('a');
+          anchor.href = shareUrl;
+          anchor.click();
+        }
+        break;
+    }
   }
 
   // Event listeners for search and filter

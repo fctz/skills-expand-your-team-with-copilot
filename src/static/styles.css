@@ -320,6 +320,74 @@ section h3 {
   align-items: center;
 }
 
+/* Social Share Buttons */
+.social-share {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+}
+
+.share-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.share-button {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  padding: 0;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.share-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.share-button.facebook {
+  background-color: #1877f2;
+  color: white;
+}
+
+.share-button.facebook:hover {
+  background-color: #145dbf;
+}
+
+.share-button.twitter {
+  background-color: #000000;
+  color: white;
+}
+
+.share-button.twitter:hover {
+  background-color: #333333;
+}
+
+.share-button.email {
+  background-color: #ea4335;
+  color: white;
+}
+
+.share-button.email:hover {
+  background-color: #c5372c;
+}
+
+.share-icon {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 /* Buttons */
 .register-button {
   background: linear-gradient(145deg, var(--secondary), var(--secondary-dark));
