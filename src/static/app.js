@@ -121,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     fetchActivities();
   }
-  }
 
   // Check if user is already logged in (from localStorage)
   function checkAuthentication() {
