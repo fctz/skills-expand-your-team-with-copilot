@@ -664,7 +664,10 @@ document.addEventListener("DOMContentLoaded", () => {
         shareUrl = `mailto:?subject=${subject}&body=${body}`;
         // Validate URL starts with mailto:
         if (shareUrl.startsWith("mailto:")) {
-          window.location.href = shareUrl;
+          // Use a temporary anchor element for better cross-browser compatibility
+          const anchor = document.createElement('a');
+          anchor.href = shareUrl;
+          anchor.click();
         }
         break;
     }
