@@ -44,6 +44,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Authentication state
   let currentUser = null;
 
+  // Helper function to escape HTML to prevent XSS
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
   // Time range mappings for the dropdown
   const timeRanges = {
     morning: { start: "06:00", end: "08:00" }, // Before school hours
@@ -554,13 +561,13 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
       <div class="social-share">
         <span class="share-label">Share:</span>
-        <button class="share-button facebook" data-activity="${name}" data-description="${details.description}" data-schedule="${formattedSchedule}" title="Share on Facebook">
+        <button class="share-button facebook" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share on Facebook">
           <span class="share-icon">f</span>
         </button>
-        <button class="share-button twitter" data-activity="${name}" data-description="${details.description}" data-schedule="${formattedSchedule}" title="Share on Twitter">
+        <button class="share-button twitter" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share on Twitter">
           <span class="share-icon">𝕏</span>
         </button>
-        <button class="share-button email" data-activity="${name}" data-description="${details.description}" data-schedule="${formattedSchedule}" title="Share via Email">
+        <button class="share-button email" data-activity="${escapeHtml(name)}" data-description="${escapeHtml(details.description)}" data-schedule="${escapeHtml(formattedSchedule)}" title="Share via Email">
           <span class="share-icon">✉</span>
         </button>
       </div>
@@ -621,6 +628,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const description = button.dataset.description;
     const schedule = button.dataset.schedule;
 
+    // Validate that we have the required data
+    if (!activityName || !description || !schedule) {
+      console.error("Missing required data for sharing");
+      return;
+    }
+
     const pageUrl = window.location.href;
     const shareText = `Check out ${activityName} at Mergington High School! ${description} Schedule: ${schedule}`;
     const encodedText = encodeURIComponent(shareText);
@@ -631,11 +644,17 @@ document.addEventListener("DOMContentLoaded", () => {
     switch (platform) {
       case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`;
-        window.open(shareUrl, "_blank", "width=600,height=400");
+        // Validate URL starts with expected Facebook domain
+        if (shareUrl.startsWith("https://www.facebook.com/")) {
+          window.open(shareUrl, "_blank", "width=600,height=400,noopener,noreferrer");
+        }
         break;
       case "twitter":
         shareUrl = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
-        window.open(shareUrl, "_blank", "width=600,height=400");
+        // Validate URL starts with expected Twitter domain
+        if (shareUrl.startsWith("https://twitter.com/")) {
+          window.open(shareUrl, "_blank", "width=600,height=400,noopener,noreferrer");
+        }
         break;
       case "email":
         const subject = encodeURIComponent(`Check out ${activityName}!`);
@@ -643,7 +662,10 @@ document.addEventListener("DOMContentLoaded", () => {
           `I wanted to share this activity with you:\n\n${activityName}\n${description}\n\nSchedule: ${schedule}\n\nView more at: ${pageUrl}`
         );
         shareUrl = `mailto:?subject=${subject}&body=${body}`;
-        window.location.href = shareUrl;
+        // Validate URL starts with mailto:
+        if (shareUrl.startsWith("mailto:")) {
+          window.location.href = shareUrl;
+        }
         break;
     }
   }
